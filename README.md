@@ -1,3 +1,5 @@
+
+
 # grpcprom
 `import "github.com/abursavich/grpcprom"`
 
@@ -11,7 +13,7 @@ Package grpcprom provides Prometheus instrumentation for gRPC servers.
 * [Variables](#pkg-variables)
 * [type HistogramOpts](#HistogramOpts)
 * [type Metrics](#Metrics)
-  * [func NewMetrics(config MetricsOpts) *Metrics](#NewMetrics)
+  * [func NewMetrics(options MetricsOpts) *Metrics](#NewMetrics)
   * [func (m *Metrics) Collect(ch chan&lt;- prometheus.Metric)](#Metrics.Collect)
   * [func (m *Metrics) Describe(ch chan&lt;- *prometheus.Desc)](#Metrics.Describe)
   * [func (m *Metrics) InitServer(srv *grpc.Server, code ...codes.Code)](#Metrics.InitServer)
@@ -20,7 +22,7 @@ Package grpcprom provides Prometheus instrumentation for gRPC servers.
 * [type SubsystemOpts](#SubsystemOpts)
 
 #### <a name="pkg-files">Package files</a>
-[grpcprom.go](/grpcprom.go)
+[grpcprom.go](/grpcprom.go) 
 
 ## <a name="pkg-variables">Variables</a>
 ``` go
@@ -51,13 +53,13 @@ type Metrics struct {
 ```
 Metrics track gRPC metrics.
 
-### <a name="NewMetrics">func</a> [NewMetrics](/grpcprom.go?s=1695:1739#L80)
+### <a name="NewMetrics">func</a> [NewMetrics](/grpcprom.go?s=1696:1741#L80)
 ``` go
-func NewMetrics(config MetricsOpts) *Metrics
+func NewMetrics(options MetricsOpts) *Metrics
 ```
-NewMetrics returns new metrics with the given config.
+NewMetrics returns new metrics with the given options.
 
-### <a name="Metrics.Collect">func</a> (\*Metrics) [Collect](/grpcprom.go?s=2377:2431#L100)
+### <a name="Metrics.Collect">func</a> (\*Metrics) [Collect](/grpcprom.go?s=2381:2435#L100)
 ``` go
 func (m *Metrics) Collect(ch chan<- prometheus.Metric)
 ```
@@ -66,7 +68,7 @@ and returns once the last metric has been sent.
 
 It implements the prometheus.Collector interface.
 
-### <a name="Metrics.Describe">func</a> (\*Metrics) [Describe](/grpcprom.go?s=2084:2138#L91)
+### <a name="Metrics.Describe">func</a> (\*Metrics) [Describe](/grpcprom.go?s=2088:2142#L91)
 ``` go
 func (m *Metrics) Describe(ch chan<- *prometheus.Desc)
 ```
@@ -75,7 +77,7 @@ to the provided channel and returns once the last descriptor has been sent.
 
 It implements the prometheus.Collector interface.
 
-### <a name="Metrics.InitServer">func</a> (\*Metrics) [InitServer](/grpcprom.go?s=2666:2732#L108)
+### <a name="Metrics.InitServer">func</a> (\*Metrics) [InitServer](/grpcprom.go?s=2670:2736#L108)
 ``` go
 func (m *Metrics) InitServer(srv *grpc.Server, code ...codes.Code)
 ```
@@ -83,7 +85,7 @@ InitServer initializes the metrics exported by the server.
 It limits the code labels to those provided. If not provided,
 all known code labels are initialized.
 
-### <a name="Metrics.StatsHandler">func</a> (\*Metrics) [StatsHandler](/grpcprom.go?s=3609:3655#L137)
+### <a name="Metrics.StatsHandler">func</a> (\*Metrics) [StatsHandler](/grpcprom.go?s=3613:3659#L137)
 ``` go
 func (m *Metrics) StatsHandler() stats.Handler
 ```

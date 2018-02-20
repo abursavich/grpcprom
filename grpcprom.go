@@ -76,11 +76,11 @@ type Metrics struct {
 	handler handler
 }
 
-// NewMetrics returns new metrics with the given config.
-func NewMetrics(config MetricsOpts) *Metrics {
+// NewMetrics returns new metrics with the given options.
+func NewMetrics(options MetricsOpts) *Metrics {
 	return &Metrics{handler: handler{
-		client: newMetrics("client", config.Client),
-		server: newMetrics("server", config.Server),
+		client: newMetrics("client", options.Client),
+		server: newMetrics("server", options.Server),
 	}}
 }
 
