@@ -1,4 +1,22 @@
 // Package grpcprom provides Prometheus instrumentation for gRPC servers.
+//
+// The following metrics are provided:
+//
+//  grpc_client_connections_open [gauge] Number of gRPC client connections open.
+//  grpc_client_connections_total [counter] Total number of gRPC client connections opened.
+//  grpc_client_requests_pending{service,method} [gauge] Number of gRPC client requests pending.
+//  grpc_client_requests_total{service,method,code} [counter] Total number of gRPC client requests completed.
+//  grpc_client_latency_seconds{service,method,code} [histogram] Latency of gRPC client requests.
+//  grpc_client_recv_bytes{service,method,frame} [histogram] Bytes received in gRPC client responses.
+//  grpc_client_sent_bytes{service,method,frame} [histogram] Bytes sent in gRPC client requests.
+//
+//  grpc_server_connections_open [gauge] Number of gRPC server connections open.
+//  grpc_server_connections_total [counter] Total number of gRPC server connections opened.
+//  grpc_server_requests_pending{service,method} [gauge] Number of gRPC server requests pending.
+//  grpc_server_requests_total{service,method,code} [counter] Total number of gRPC server requests completed.
+//  grpc_server_latency_seconds{service,method,code} [histogram] Latency of gRPC server requests.
+//  grpc_server_recv_bytes{service,method,frame} [histogram] Bytes received in gRPC server requests.
+//  grpc_server_sent_bytes{service,method,frame} [histogram] Bytes sent in gRPC server responses.
 package grpcprom
 
 import (
