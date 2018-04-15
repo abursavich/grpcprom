@@ -1,0 +1,13 @@
+syntax = "proto3";
+
+package frontend;
+
+service Frontend {
+  rpc Query (QueryRequest) returns (QueryResponse);
+}
+
+message QueryRequest {
+}
+
+message QueryResponse {
+}
