@@ -14,21 +14,21 @@ import (
 
 func Example() {
 	// Create gRPC metrics with selected options and register with Prometheus.
-	m := grpcprom.NewMetrics(grpcprom.MetricsOpts{
+	grpcMetrics := grpcprom.NewMetrics(grpcprom.MetricsOpts{
 		// ...
 	})
-	prometheus.MustRegister(m)
+	prometheus.MustRegister(grpcMetrics)
 	// Instrument gRPC client(s).
-	conn, err := grpc.Dial(backendAddr, grpc.WithStatsHandler(m.StatsHandler()))
+	backendConn, err := grpc.Dial(backendAddr, grpcMetrics.DialOption())
 	if err != nil {
 		log.Fatal(err)
 	}
 	// Instrument gRPC server and, optionally, initialize server metrics.
-	srv := grpc.NewServer(grpc.StatsHandler(m.StatsHandler()))
+	srv := grpc.NewServer(grpcMetrics.ServerOption())
 	pb.RegisterFrontendServer(srv, &Server{
-		backend: bpb.NewBackendClient(conn),
+		backend: bpb.NewBackendClient(backendConn),
 	})
-	m.InitServer(srv)
+	grpcMetrics.InitServer(srv)
 	// Listen and serve.
 	lis, err := net.Listen("tcp", addr)
 	if err != nil {

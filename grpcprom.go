@@ -1,4 +1,4 @@
-// Package grpcprom provides Prometheus instrumentation for gRPC servers.
+// Package grpcprom provides Prometheus instrumentation for gRPC clients and servers.
 //
 // The following metrics are provided:
 //
@@ -22,6 +22,7 @@ package grpcprom
 import (
 	"context"
 	"fmt"
+	"log"
 	"strings"
 	"time"
 
@@ -152,7 +153,24 @@ func (m *Metrics) InitServer(srv *grpc.Server, code ...codes.Code) {
 }
 
 // StatsHandler returns a gRPC stats.Handler.
-func (m *Metrics) StatsHandler() stats.Handler { return &m.handler }
+//
+// Deprecated: Use DialOption or ServerOption instead.
+func (m *Metrics) StatsHandler() stats.Handler {
+	log.Print("grpcprom: WARNING: StatsHandler is deprecated and may be removed. Use DialOption or ServerOption instead.")
+	return &m.handler
+}
+
+// DialOption returns a gRPC DialOption that instruments metrics
+// for the client connection.
+func (m *Metrics) DialOption() grpc.DialOption {
+	return grpc.WithStatsHandler(&m.handler)
+}
+
+// ServerOption returns a gRPC ServerOption that instruments metrics
+// for the server.
+func (m *Metrics) ServerOption() grpc.ServerOption {
+	return grpc.StatsHandler(&m.handler)
+}
 
 type metrics struct {
 	connsOpen   prometheus.Gauge

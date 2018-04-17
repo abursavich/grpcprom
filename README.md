@@ -8,7 +8,7 @@
 * [Examples](#pkg-examples)
 
 ## <a name="pkg-overview">Overview</a>
-Package grpcprom provides Prometheus instrumentation for gRPC servers.
+Package grpcprom provides Prometheus instrumentation for gRPC clients and servers.
 
 The following metrics are provided:
 
@@ -30,24 +30,27 @@ The following metrics are provided:
 	grpc_server_sent_bytes{service,method,frame} [histogram] Bytes sent in gRPC server responses.
 
 
+
 #### <a name="example_">Example</a>
+
+Code:
 ``` go
 // Create gRPC metrics with selected options and register with Prometheus.
-m := grpcprom.NewMetrics(grpcprom.MetricsOpts{
+grpcMetrics := grpcprom.NewMetrics(grpcprom.MetricsOpts{
     // ...
 })
-prometheus.MustRegister(m)
+prometheus.MustRegister(grpcMetrics)
 // Instrument gRPC client(s).
-conn, err := grpc.Dial(backendAddr, grpc.WithStatsHandler(m.StatsHandler()))
+backendConn, err := grpc.Dial(backendAddr, grpcMetrics.DialOption())
 if err != nil {
     log.Fatal(err)
 }
 // Instrument gRPC server and, optionally, initialize server metrics.
-srv := grpc.NewServer(grpc.StatsHandler(m.StatsHandler()))
+srv := grpc.NewServer(grpcMetrics.ServerOption())
 pb.RegisterFrontendServer(srv, &Server{
-    backend: bpb.NewBackendClient(conn),
+    backend: bpb.NewBackendClient(backendConn),
 })
-m.InitServer(srv)
+grpcMetrics.InitServer(srv)
 // Listen and serve.
 lis, err := net.Listen("tcp", addr)
 if err != nil {
@@ -57,7 +60,6 @@ log.Fatal(srv.Serve(lis))
 ```
 
 
-
 ## <a name="pkg-index">Index</a>
 * [Variables](#pkg-variables)
 * [type HistogramOpts](#HistogramOpts)
@@ -65,7 +67,9 @@ log.Fatal(srv.Serve(lis))
   * [func NewMetrics(options MetricsOpts) *Metrics](#NewMetrics)
   * [func (m *Metrics) Collect(ch chan&lt;- prometheus.Metric)](#Metrics.Collect)
   * [func (m *Metrics) Describe(ch chan&lt;- *prometheus.Desc)](#Metrics.Describe)
+  * [func (m *Metrics) DialOption() grpc.DialOption](#Metrics.DialOption)
   * [func (m *Metrics) InitServer(srv *grpc.Server, code ...codes.Code)](#Metrics.InitServer)
+  * [func (m *Metrics) ServerOption() grpc.ServerOption](#Metrics.ServerOption)
   * [func (m *Metrics) StatsHandler() stats.Handler](#Metrics.StatsHandler)
 * [type MetricsOpts](#MetricsOpts)
 * [type SubsystemOpts](#SubsystemOpts)
@@ -92,7 +96,7 @@ DefaultLatencyBuckets are the default latency histogram buckets.
 
 
 
-## <a name="HistogramOpts">type</a> [HistogramOpts](/grpcprom.go?s=2563:2638#L68)
+## <a name="HistogramOpts">type</a> [HistogramOpts](/grpcprom.go?s=2582:2657#L69)
 ``` go
 type HistogramOpts struct {
     Buckets []float64
@@ -111,7 +115,7 @@ HistogramOpts specify options for histograms.
 
 
 
-## <a name="Metrics">type</a> [Metrics](/grpcprom.go?s=2998:3038#L93)
+## <a name="Metrics">type</a> [Metrics](/grpcprom.go?s=3017:3057#L94)
 ``` go
 type Metrics struct {
     // contains filtered or unexported fields
@@ -125,7 +129,7 @@ Metrics track gRPC metrics.
 
 
 
-### <a name="NewMetrics">func</a> [NewMetrics](/grpcprom.go?s=3098:3143#L98)
+### <a name="NewMetrics">func</a> [NewMetrics](/grpcprom.go?s=3117:3162#L99)
 ``` go
 func NewMetrics(options MetricsOpts) *Metrics
 ```
@@ -135,7 +139,7 @@ NewMetrics returns new metrics with the given options.
 
 
 
-### <a name="Metrics.Collect">func</a> (\*Metrics) [Collect](/grpcprom.go?s=3783:3837#L118)
+### <a name="Metrics.Collect">func</a> (\*Metrics) [Collect](/grpcprom.go?s=3802:3856#L119)
 ``` go
 func (m *Metrics) Collect(ch chan<- prometheus.Metric)
 ```
@@ -147,7 +151,7 @@ It implements the prometheus.Collector interface.
 
 
 
-### <a name="Metrics.Describe">func</a> (\*Metrics) [Describe](/grpcprom.go?s=3490:3544#L109)
+### <a name="Metrics.Describe">func</a> (\*Metrics) [Describe](/grpcprom.go?s=3509:3563#L110)
 ``` go
 func (m *Metrics) Describe(ch chan<- *prometheus.Desc)
 ```
@@ -159,7 +163,17 @@ It implements the prometheus.Collector interface.
 
 
 
-### <a name="Metrics.InitServer">func</a> (\*Metrics) [InitServer](/grpcprom.go?s=4072:4138#L126)
+### <a name="Metrics.DialOption">func</a> (\*Metrics) [DialOption](/grpcprom.go?s=5378:5424#L165)
+``` go
+func (m *Metrics) DialOption() grpc.DialOption
+```
+DialOption returns a gRPC DialOption that instruments metrics
+for the client connection.
+
+
+
+
+### <a name="Metrics.InitServer">func</a> (\*Metrics) [InitServer](/grpcprom.go?s=4091:4157#L127)
 ``` go
 func (m *Metrics) InitServer(srv *grpc.Server, code ...codes.Code)
 ```
@@ -170,16 +184,28 @@ all known code labels are initialized.
 
 
 
-### <a name="Metrics.StatsHandler">func</a> (\*Metrics) [StatsHandler](/grpcprom.go?s=5015:5061#L155)
+### <a name="Metrics.ServerOption">func</a> (\*Metrics) [ServerOption](/grpcprom.go?s=5560:5610#L171)
+``` go
+func (m *Metrics) ServerOption() grpc.ServerOption
+```
+ServerOption returns a gRPC ServerOption that instruments metrics
+for the server.
+
+
+
+
+### <a name="Metrics.StatsHandler">func</a> (\*Metrics) [StatsHandler](/grpcprom.go?s=5092:5138#L158)
 ``` go
 func (m *Metrics) StatsHandler() stats.Handler
 ```
 StatsHandler returns a gRPC stats.Handler.
 
+Deprecated: Use DialOption or ServerOption instead.
 
 
 
-## <a name="MetricsOpts">type</a> [MetricsOpts](/grpcprom.go?s=2881:2965#L85)
+
+## <a name="MetricsOpts">type</a> [MetricsOpts](/grpcprom.go?s=2900:2984#L86)
 ``` go
 type MetricsOpts struct {
     Client SubsystemOpts
@@ -198,7 +224,7 @@ MetricsOpts specify options for metrics.
 
 
 
-## <a name="SubsystemOpts">type</a> [SubsystemOpts](/grpcprom.go?s=2718:2835#L76)
+## <a name="SubsystemOpts">type</a> [SubsystemOpts](/grpcprom.go?s=2737:2854#L77)
 ``` go
 type SubsystemOpts struct {
     BytesRecv HistogramOpts
