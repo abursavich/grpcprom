@@ -1,38 +1,63 @@
 package grpcprom_test
 
 import (
-	"log"
 	"net"
+	"net/http"
 
-	"github.com/abursavich/grpcprom"
+	"bursavich.dev/grpcprom"
 	"github.com/prometheus/client_golang/prometheus"
+	"github.com/prometheus/client_golang/prometheus/collectors"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/codes"
 
-	bpb "github.com/abursavich/grpcprom/testdata/backend"
-	pb "github.com/abursavich/grpcprom/testdata/frontend"
+	bepb "bursavich.dev/grpcprom/testdata/backend"
+	fepb "bursavich.dev/grpcprom/testdata/frontend"
 )
 
 func Example() {
-	// Create gRPC metrics with selected options and register with Prometheus.
-	grpcMetrics := grpcprom.NewMetrics(grpcprom.MetricsOpts{
-		// ...
-	})
-	prometheus.MustRegister(grpcMetrics)
+	registry := prometheus.NewRegistry()
+	registry.MustRegister(collectors.NewGoCollector())
+	registry.MustRegister(collectors.NewBuildInfoCollector())
+	registry.MustRegister(collectors.NewProcessCollector(collectors.ProcessCollectorOpts{}))
+
+	// Create gRPC client metrics and register with Prometheus.
+	clientMetrics := grpcprom.NewClientMetrics()
+	registry.MustRegister(clientMetrics)
 	// Instrument gRPC client(s).
-	backendConn, err := grpc.Dial(backendAddr, grpcMetrics.DialOption())
-	if err != nil {
-		log.Fatal(err)
-	}
-	// Instrument gRPC server and, optionally, initialize server metrics.
-	srv := grpc.NewServer(grpcMetrics.ServerOption())
-	pb.RegisterFrontendServer(srv, &Server{
-		backend: bpb.NewBackendClient(backendConn),
+	backendConn, err := grpc.Dial(backendAddr,
+		grpc.WithStatsHandler(clientMetrics.StatsHandler()),
+		grpc.WithStreamInterceptor(clientMetrics.StreamInterceptor()),
+		grpc.WithUnaryInterceptor(clientMetrics.UnaryInterceptor()),
+		grpc.WithDefaultCallOptions(
+			grpc.WaitForReady(true),
+		),
+	)
+	check(err)
+
+	// Create gRPC server metrics and register with Prometheus.
+	serverMetrics := grpcprom.NewServerMetrics()
+	registry.MustRegister(serverMetrics)
+	// Instrument gRPC server and initialize metrics.
+	grpcSrv := grpc.NewServer(
+		grpc.StatsHandler(serverMetrics.StatsHandler()),
+		grpc.StreamInterceptor(serverMetrics.StreamInterceptor()),
+		grpc.UnaryInterceptor(serverMetrics.UnaryInterceptor()),
+	)
+	fepb.RegisterFrontendServer(grpcSrv, &FrontendServer{
+		BackendClient: bepb.NewBackendClient(backendConn),
 	})
-	grpcMetrics.InitServer(srv)
-	// Listen and serve.
-	lis, err := net.Listen("tcp", addr)
-	if err != nil {
-		log.Fatal(err)
-	}
-	log.Fatal(srv.Serve(lis))
+	serverMetrics.Init(grpcSrv, codes.OK)
+
+	// Serve metrics.
+	httpLis, err := net.Listen("tcp", httpAddr)
+	check(err)
+	httpSrv := http.NewServeMux()
+	httpSrv.Handle("/metrics", promhttp.HandlerFor(registry, promhttp.HandlerOpts{}))
+	go http.Serve(httpLis, httpSrv)
+
+	// Serve gRPC.
+	grpcLis, err := net.Listen("tcp", grpcAddr)
+	check(err)
+	check(grpcSrv.Serve(grpcLis))
 }

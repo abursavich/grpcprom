@@ -1,5 +1,7 @@
 syntax = "proto3";
 
+option go_package = "bursavich.dev/testdata/frontend";
+
 package frontend;
 
 service Frontend {

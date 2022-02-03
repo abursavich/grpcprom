@@ -1,14 +1,23 @@
-module github.com/abursavich/grpcprom
+module bursavich.dev/grpcprom
 
-go 1.13
+go 1.17
 
 require (
-	github.com/golang/protobuf v1.3.2
-	github.com/prometheus/client_golang v1.3.0
-	github.com/prometheus/common v0.8.0 // indirect
-	golang.org/x/net v0.0.0-20200114155413-6afb5195e5aa
-	golang.org/x/sys v0.0.0-20200117145432-59e60aa80a0c // indirect
-	golang.org/x/text v0.3.2 // indirect
-	google.golang.org/genproto v0.0.0-20200117163144-32f20d992d24 // indirect
-	google.golang.org/grpc v1.26.0
+	github.com/prometheus/client_golang v1.12.1
+	github.com/prometheus/procfs v0.7.3 // indirect
+	golang.org/x/sys v0.0.0-20220114195835-da31bd327af9 // indirect
+	golang.org/x/text v0.3.7 // indirect
+	google.golang.org/genproto v0.0.0-20220202230416-2a053f022f0d // indirect
+	google.golang.org/grpc v1.44.0
+	google.golang.org/protobuf v1.27.1
+)
+
+require (
+	github.com/beorn7/perks v1.0.1 // indirect
+	github.com/cespare/xxhash/v2 v2.1.2 // indirect
+	github.com/golang/protobuf v1.5.2 // indirect
+	github.com/matttproud/golang_protobuf_extensions v1.0.1 // indirect
+	github.com/prometheus/client_model v0.2.0 // indirect
+	github.com/prometheus/common v0.32.1 // indirect
+	golang.org/x/net v0.0.0-20210525063256-abc453219eb5 // indirect
 )
