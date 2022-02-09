@@ -297,8 +297,6 @@ func (h *handler) HandleConn(ctx context.Context, stat stats.ConnStats) {
 	}
 }
 
-var rpcInfoKey = "grpcprom"
-
 type rpcInfo struct {
 	methodInfo
 	begin time.Time
@@ -329,10 +327,10 @@ func (h *handler) methodInfo(method, typ string) methodInfo {
 
 // TagRPC implements the stats.Handler interface.
 func (h *handler) TagRPC(ctx context.Context, v *stats.RPCTagInfo) context.Context {
-	if _, ok := ctx.Value(&rpcInfoKey).(*rpcInfo); ok {
+	if _, ok := ctx.Value(h).(*rpcInfo); ok {
 		return ctx
 	}
-	return context.WithValue(ctx, &rpcInfoKey, &rpcInfo{
+	return context.WithValue(ctx, h, &rpcInfo{
 		methodInfo: h.methodInfo(v.FullMethodName, unknown),
 	})
 }
@@ -348,7 +346,7 @@ func splitFullMethodName(s string) (server, method string) {
 
 // HandleRPC implements the stats.Handler interface.
 func (h *handler) HandleRPC(ctx context.Context, stat stats.RPCStats) {
-	v, ok := ctx.Value(&rpcInfoKey).(*rpcInfo)
+	v, ok := ctx.Value(h).(*rpcInfo)
 	if !ok {
 		return
 	}
@@ -427,11 +425,11 @@ func (h *handler) streamServerInterceptor(
 
 func (h *handler) context(ctx context.Context, method string, typ string) context.Context {
 	info := h.methodInfo(method, typ)
-	if v, ok := ctx.Value(&rpcInfoKey).(*rpcInfo); ok {
+	if v, ok := ctx.Value(h).(*rpcInfo); ok {
 		v.methodInfo = info
 		return ctx
 	}
-	return context.WithValue(ctx, &rpcInfoKey, &rpcInfo{methodInfo: info})
+	return context.WithValue(ctx, h, &rpcInfo{methodInfo: info})
 }
 
 type ctxServerStream struct {
