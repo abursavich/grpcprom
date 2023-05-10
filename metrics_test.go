@@ -15,7 +15,7 @@ import (
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/credentials/insecure"
 
-	pb "google.golang.org/grpc/test/grpc_testing"
+	pb "google.golang.org/grpc/interop/grpc_testing"
 )
 
 func TestMetrics(t *testing.T) {
